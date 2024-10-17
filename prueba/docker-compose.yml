@@ -1,0 +1,39 @@
+version: '3'
+
+services:
+  
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mysql
+    environment:
+      - DB_HOST=mysql
+      - DB_USER=root
+      - DB_PASSWORD=Qwerty.123
+      - DB_NAME=prueba
+    restart: always
+    networks:
+      - backend
+      - external-network
+
+
+  
+  mysql:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: Qwerty.123
+      MYSQL_DATABASE: prueba
+    networks:
+      - backend
+    # No exponer el puerto 3306
+
+networks:
+  backend:
+    driver: bridge
+
+  external-network:
+    external: true
