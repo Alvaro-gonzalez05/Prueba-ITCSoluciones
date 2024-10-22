@@ -8,6 +8,7 @@ from typing import Union
 from fastapi import FastAPI, UploadFile, File, HTTPException, Form
 import os
 
+
 # Obtener una variable de entorno
 db_host = os.getenv('DB_HOST')
 db_user = os.getenv('DB_USER')
@@ -18,11 +19,14 @@ db_database= os.getenv('DB_NAME')
 app= FastAPI()
 
 
+
+
 connection = pymysql.connect(
     host =db_host,  
     user=db_user,
     password=db_password, 
-    database=db_database
+    database=db_database,
+
 )
 
 def conexion():
@@ -51,7 +55,25 @@ def conexion():
             )
         """)
 
-        print("La tabla se crearon con exito......")
+        
+
+        micursor.close()  # Cerrar el cursor antes de cerrar la conexión
+        miconexion.close()
+
+        miconexion = pymysql.connect(host=db_host, user=db_user, password=db_password, db=db_database)
+        micursor = miconexion.cursor()
+
+        # variable CREAR TABLA USUARIO = 
+        micursor.execute("""
+            CREATE TABLE IF NOT EXISTS usuarios (
+                id INT(11) AUTO_INCREMENT PRIMARY KEY, 
+                password VARCHAR(255) NOT NULL,
+                username VARCHAR(30) NOT NULL,  
+                role VARCHAR(30) NOT NULL
+            )
+        """)
+
+        print("Tablas creadas con exito...")
 
         micursor.close()  # Cerrar el cursor antes de cerrar la conexión
         miconexion.close()
@@ -64,7 +86,6 @@ def conexion():
         messagebox.showwarning("ERROR", f"Error inesperado: {e}")
 
 conexion()
-
 
 
 @app.post("/upload/", summary="Subir una Imagen", description="Subir una imagen desde el selector de medios y las convierte en base64")
@@ -213,3 +234,85 @@ async def editar_producto(id_producto: int, nombre_producto: str = Form(...), fi
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al modificar el producto: {str(e)}")
+
+
+
+@app.post("/register")
+async def register(username: str, password: str, role:str):
+    try:
+        with connection.cursor() as cursor:
+            # Verificar si el usuario ya existe
+            cursor.execute("SELECT * FROM usuarios WHERE username = %s", (username,))
+            result = cursor.fetchone()
+            if result:
+                raise HTTPException(status_code=400, detail="El usuario ya existe")
+
+            # Registrar el nuevo usuario
+            cursor.execute("INSERT INTO usuarios (username, password,role) VALUES (%s, %s, %s)", (username, password,role))
+            connection.commit()
+            return {"message": "Usuario registrado exitosamente"}
+    except Exception as e:
+        connection.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/login")
+async def login(username: str, password: str):
+    try:
+        with connection.cursor() as cursor:
+            # Verificar si el usuario y contraseña son correctos
+            cursor.execute("SELECT username, role FROM usuarios WHERE username = %s AND password = %s", (username, password))
+            result = cursor.fetchone()
+            if result:
+                # Devuelve el rol junto con el nombre de usuario
+                return {"username": result[0], "role": result[1]}
+            else:
+                raise HTTPException(status_code=400, detail="Credenciales incorrectas")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    
+
+@app.get("/usuarios", summary="Obtener todos los usuarios")
+async def obtener_usuarios():
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT id, username, role, password FROM usuarios")
+            usuarios = cursor.fetchall()
+            return [{"id": u[0], "username": u[1], "role": u[2], "password": u[3]} for u in usuarios]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/usuarios/{id}", summary="Obtener un usuario por ID")
+async def obtener_usuario(id: int):
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT id, username, role, password FROM usuarios WHERE id = %s", (id,))
+            usuario = cursor.fetchone()
+            if usuario:
+                return {
+                    "id": usuario[0],
+                    "username": usuario[1],
+                    "role": usuario[2],
+                    "password": usuario[3]
+                }
+            else:
+                raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
+@app.put("/usuarios/{id}/editar")
+async def editar_usuario(id: int, username: str, password: str, role: str):
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                UPDATE usuarios SET username = %s, password = %s, role = %s WHERE id = %s
+            """, (username, password, role, id))
+            connection.commit()
+
+        return {"message": "Usuario actualizado correctamente"}
+    except Exception as e:
+        connection.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
