@@ -10,18 +10,18 @@ services:
       - "8000:8000"
     depends_on:
       - mysql
+      - logstash  # Aseguramos que Logstash esté disponible antes de ejecutar la API
     environment:
       - DB_HOST=mysql
       - DB_USER=root
       - DB_PASSWORD=Qwerty.123
       - DB_NAME=prueba
+      - LOGSTASH_HOST=logstash  # Añadimos la variable de entorno para conectar con Logstash
     restart: always
     networks:
       - backend
       - external-network
 
-
-  
   mysql:
     image: mysql:5.7
     environment:
@@ -29,11 +29,35 @@ services:
       MYSQL_DATABASE: prueba
     networks:
       - backend
-    # No exponer el puerto 3306
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.1
+    environment:
+      - discovery.type=single-node
+    ports:
+      - "9200:9200"
+    networks:
+      - backend
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.10.1
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    networks:
+      - backend
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.10.1
+    volumes:
+      - ./logstash:/config-dir
+    command: logstash -f /config-dir/logstash.conf
+    networks:
+      - backend
 
 networks:
   backend:
     driver: bridge
-
   external-network:
     external: true
