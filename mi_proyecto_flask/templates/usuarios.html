@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/table_users.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <title>Usuarios</title>
+</head>
+<body>
+    <div class="cuerpo">
+        <h1>Lista de Usuarios</h1>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre de Usuario</th>
+                <th>Rol</th>
+                <th>Contraseña</th>
+                <th>Acciones</th> <!-- Columna para acciones -->
+            </tr>
+        </thead>
+        <tbody>
+            {% for usuario in usuarios %}
+            <tr>
+                <td>{{ usuario.id }}</td>
+                <td>{{ usuario.username }}</td>
+                <td>{{ usuario.role }}</td>
+                <td>{{ usuario.password }}</td>
+                <td class="actions">
+                   <!-- Botón para editar el usuario (con ícono de lápiz) -->
+                   <form method="GET" action="{{ url_for('editar_usuario', id=usuario.id) }}">
+                        <button class="boton-formulario" type="submit">
+                        <i class="fas fa-edit"></i> <!-- Ícono de lápiz -->
+                        </button>
+                    </form>
+                
+                <!-- Botón para eliminar el usuario (con ícono de basurero) -->
+                    <form method="POST" action="{{ url_for('eliminar_usuario', id=usuario.id) }}" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este usuario?');">
+                        <button class="boton-formulario" type="submit">
+                            <i class="fas fa-trash"></i> <!-- Ícono de basurero -->
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <button class="volver"><a  href="{{ url_for('index') }}">Volver al inicio</a></button>
+
+
+    </div>
+    
+</body>
+</html>

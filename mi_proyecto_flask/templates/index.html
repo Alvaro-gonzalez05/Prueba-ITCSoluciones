@@ -7,9 +7,29 @@
     <link rel="stylesheet" href="../static/index.css">
 </head>
 <body>
+  
+  
+  
+  
+  
+  
+  
+
     <div class="textocentral">
         <h1>PRUEBA CRUD PRODUCTOSSSS</h1>
     </div>
+    <h1>Bienvenido {{ session['username'] }}</h1>
+    
+    {% if session.get('username') %}
+    <button class="login-botton"> <a  href="{{ url_for('logout') }}">Logout</a></button>
+{% else %}
+    <button class="login-botton"><a  href="{{ url_for('login') }}">Login</a></button>
+{% endif %}
+    {% if session.get('role') == 'admin' %}
+      <button class="edit-button"><a href="{{ url_for('mostrar_usuarios') }}" class="btn">Ver todos los usuarios</a></button>
+  {% endif %}
+
+
     <div>
         <ul class="productos">
             {% for producto in productos %}
@@ -20,7 +40,6 @@
                         <button class="edit-button" type="submit">Editar Producto</button>
                     </form>
                     <form class="form-delete" method="POST" action="/imagen/delete">
-                        <!-- Campo oculto que contiene el id del producto -->
                         <input type="hidden" name="id_producto" value="{{ producto.id }}">
                         <button class="delete-button" type="submit">Eliminar Producto</button>
                     </form>
@@ -44,6 +63,7 @@
             <button class="upload-button" type="submit">Subir Imagen</button>
         </form>
     </div>
+
     
 </body>
 </html>

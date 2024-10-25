@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/login_register.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=arrow_back" />
+
+    <title>Registro</title>
+</head>
+<body>
+    <div class="divpadre">
+      
+      <form class="formulario_login" method="POST" action="{{ url_for('register') }}">
+        <div class="cabecera">
+          <a href="{{url_for('index')}}"><span class="material-symbols-outlined" id="material-symbols-outlined">arrow_back</span></a>
+          <h1>REGISTER</h1>
+        </div>
+        <div class="datos">
+
+          <label for="username">Usuario:</label>
+          <input class="inputs type="text" id="username" name="username" required>
+        
+          <label for="password">Contraseña:</label>
+          <input class="inputs type="password" id="password" name="password" required>
+    
+          <label for="role">Rol:</label>
+            <input class="inputs type="text" id="role" name="role" required>
+    
+        <button class="botton-login" type="submit">Registrarse</button>
+        <a href="{{ url_for('login') }}"><p>Ya tienes cuenta? Inicia Sesion....</p></a>
+
+
+
+        </div>  
+        
+      </form>
+
+    </div>
+    
+    
+</body>
+</html>
